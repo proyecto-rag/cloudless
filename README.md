@@ -18,6 +18,7 @@ cloudless/
 
 - Node.js 18+
 - pnpm 8+
+- docker
 
 ## Instalación
 
@@ -88,3 +89,4 @@ pnpm --filter @repo/shared add zod
 - El frontend corre en `http://localhost:3001`
 - El backend corre en `http://localhost:3000`
 - Configura las variables de entorno en cada app según sea necesario
+- Para correr correctamente el backend desde `/api` es necesario correr `docker compose up -d`
