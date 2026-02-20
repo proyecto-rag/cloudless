@@ -1,15 +1,71 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import bcrypt from 'bcryptjs';
-import { Prisma, Role } from '@prisma/client';
+import { Prisma, Role, User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { handleErrors } from 'src/utilities/handleErros';
+import { LoginUserDto } from './dto/login-user.dto';
+import { JwtService } from '@nestjs/jwt';
+import { JwtPayload } from './interfaces/jwt-payload.interface';
 
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+  ) {}
+
+  checkAuthStatus(user: User) {
+    const { email, username } = user;
+    return {
+      email,
+      username,
+      token: this.getJwtToken({ id: user.id }),
+    };
+  }
+
+  async loginUser(loginUserDto: LoginUserDto) {
+    try {
+      this.logger.log(`Logging in user... ${loginUserDto.email}`);
+      const user = await this.prisma.user.findFirst({
+        where: { email: loginUserDto.email },
+      });
+      if (!user || !user.active) {
+        throw new UnauthorizedException(`Invalid credentials`);
+      }
+      const isPasswordValid = await bcrypt.compare(
+        loginUserDto.password,
+        user.password,
+      );
+      if (!isPasswordValid) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+
+      return {
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          token: this.getJwtToken({ id: user.id }),
+        },
+      };
+    } catch (error) {
+      this.logger.error(error);
+      handleErrors(error);
+    }
+  }
+
+  private getJwtToken(payload: JwtPayload) {
+    return this.jwtService.sign(payload);
+  }
 
   async create(createUserDto: CreateUserDto) {
     try {
