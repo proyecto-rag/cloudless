@@ -157,7 +157,10 @@ export class UsersService {
     }
   }
 
-  async update(id: string, updateUserDto: UpdateUserInput): Promise<UserResponse> {
+  async update(
+    id: string,
+    updateUserDto: UpdateUserInput,
+  ): Promise<UserResponse> {
     try {
       this.logger.log(`Updating user with id: ${id}`);
       await this.findOne(id);

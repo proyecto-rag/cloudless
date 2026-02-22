@@ -1,9 +1,9 @@
 import { HttpException, InternalServerErrorException } from '@nestjs/common';
 
-export const handleErrors = (error: any): never => {
+export const handleErrors = (error: any): HttpException => {
   if (error instanceof HttpException) {
-    throw error;
-  } else {
-    throw new InternalServerErrorException('Internal server error');
+    return error;
   }
+
+  return new InternalServerErrorException('Internal server error');
 };
