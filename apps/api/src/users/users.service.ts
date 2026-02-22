@@ -7,12 +7,17 @@ import {
 import bcrypt from 'bcryptjs';
 import { Prisma, Role, User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { handleErrors } from 'src/utilities/handleErros';
-import { LoginUserDto } from './dto/login-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
+import {
+  CreateUserInput,
+  LoginUserInput,
+  UpdateUserInput,
+  UserResponse,
+  UserLoginResponse,
+  UserAuthStatus,
+} from '@repo/shared';
 
 @Injectable()
 export class UsersService {
@@ -22,7 +27,7 @@ export class UsersService {
     private readonly jwtService: JwtService,
   ) {}
 
-  checkAuthStatus(user: User) {
+  checkAuthStatus(user: User): UserAuthStatus {
     const { email, username } = user;
     return {
       email,
@@ -31,7 +36,7 @@ export class UsersService {
     };
   }
 
-  async loginUser(loginUserDto: LoginUserDto) {
+  async loginUser(loginUserDto: LoginUserInput): Promise<UserLoginResponse> {
     try {
       this.logger.log(`Logging in user... ${loginUserDto.email}`);
       const user = await this.prisma.user.findFirst({
@@ -48,18 +53,23 @@ export class UsersService {
         throw new UnauthorizedException('Invalid credentials');
       }
 
+      const userResponse: UserResponse = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        active: user.active,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      };
+
       return {
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          role: user.role,
-          token: this.getJwtToken({ id: user.id }),
-        },
+        user: userResponse,
+        token: this.getJwtToken({ id: user.id }),
       };
     } catch (error) {
       this.logger.error(error);
-      handleErrors(error);
+      throw handleErrors(error);
     }
   }
 
@@ -67,18 +77,17 @@ export class UsersService {
     return this.jwtService.sign(payload);
   }
 
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserInput): Promise<UserResponse> {
     try {
       this.logger.log(`Creating user... ${createUserDto.username}`);
       const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
       const createData: Prisma.UserCreateInput = {
         ...createUserDto,
-        // Default role is user
         role: Role.user,
         password: hashedPassword,
       };
 
-      return this.prisma.user.create({
+      const user = await this.prisma.user.create({
         data: createData,
         select: {
           id: true,
@@ -90,16 +99,18 @@ export class UsersService {
           updatedAt: true,
         },
       });
+
+      return user as UserResponse;
     } catch (error) {
       this.logger.error(error);
-      handleErrors(error);
+      throw handleErrors(error);
     }
   }
 
-  async findAll() {
+  async findAll(): Promise<UserResponse[]> {
     try {
       this.logger.log('Finding all users...');
-      return this.prisma.user.findMany({
+      const users = await this.prisma.user.findMany({
         where: { active: true },
         select: {
           id: true,
@@ -111,13 +122,15 @@ export class UsersService {
           updatedAt: true,
         },
       });
+
+      return users as UserResponse[];
     } catch (error) {
       this.logger.error(error);
-      handleErrors(error);
+      throw handleErrors(error);
     }
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<UserResponse> {
     try {
       this.logger.log(`Finding user with id: ${id}`);
       const user = await this.prisma.user.findFirst({
@@ -137,14 +150,14 @@ export class UsersService {
         throw new NotFoundException(`User with ID "${id}" not found`);
       }
 
-      return user;
+      return user as UserResponse;
     } catch (error) {
       this.logger.error(error);
-      handleErrors(error);
+      throw handleErrors(error);
     }
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
+  async update(id: string, updateUserDto: UpdateUserInput): Promise<UserResponse> {
     try {
       this.logger.log(`Updating user with id: ${id}`);
       await this.findOne(id);
@@ -155,7 +168,7 @@ export class UsersService {
         updateData.password = await bcrypt.hash(updateUserDto.password, 10);
       }
 
-      return this.prisma.user.update({
+      const user = await this.prisma.user.update({
         where: { id },
         data: updateData,
         select: {
@@ -168,18 +181,20 @@ export class UsersService {
           updatedAt: true,
         },
       });
+
+      return user as UserResponse;
     } catch (error) {
       this.logger.error(error);
-      handleErrors(error);
+      throw handleErrors(error);
     }
   }
 
-  async remove(id: string) {
+  async remove(id: string): Promise<UserResponse> {
     try {
       this.logger.log(`Removing user with id: ${id}`);
       await this.findOne(id);
 
-      return this.prisma.user.update({
+      const user = await this.prisma.user.update({
         where: { id },
         data: { active: false },
         select: {
@@ -192,9 +207,11 @@ export class UsersService {
           updatedAt: true,
         },
       });
+
+      return user as UserResponse;
     } catch (error) {
       this.logger.error(error);
-      handleErrors(error);
+      throw handleErrors(error);
     }
   }
 }
