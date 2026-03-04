@@ -1,11 +1,12 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { StatCard } from "@/components/stat-card";
 import { DataTable } from "@/components/data-table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   Search,
   Filter,
@@ -13,6 +14,8 @@ import {
   Plus,
   Bell,
   HelpCircle,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 
 // Sample data matching the screenshot
@@ -149,17 +152,42 @@ export default function BucketsDashboard({ params, searchParams }: PageProps) {
   // These must be unwrapped even if not used, to avoid the "params is a Promise" error
   use(params);
   use(searchParams);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#0b1120]">
-      <Sidebar activeItem="s3-buckets" />
+      <Sidebar
+        activeItem="s3-buckets"
+        isCollapsed={isSidebarCollapsed}
+      />
 
       {/* Main Content */}
-      <main className="ml-64 min-h-screen">
+      <main
+        className={cn(
+          "min-h-screen transition-[margin] duration-300",
+          isSidebarCollapsed ? "ml-0" : "ml-64"
+        )}
+      >
         {/* Header */}
         <header className="sticky top-0 z-40 glass border-b border-[rgba(148,163,184,0.1)]">
           <div className="flex items-center justify-between px-8 py-4">
-            <h1 className="text-2xl font-bold text-white">S3 Buckets</h1>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() =>
+                  setIsSidebarCollapsed((prevState) => !prevState)
+                }
+                className="p-2 rounded-lg text-[#94a3b8] hover:bg-[rgba(30,41,59,0.7)] hover:text-white transition-colors"
+                aria-label={isSidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
+              >
+                {isSidebarCollapsed ? (
+                  <PanelLeftOpen className="w-5 h-5" />
+                ) : (
+                  <PanelLeftClose className="w-5 h-5" />
+                )}
+              </button>
+              <h1 className="text-2xl font-bold text-white">S3 Buckets</h1>
+            </div>
 
             <div className="flex items-center gap-4">
               {/* Search */}
