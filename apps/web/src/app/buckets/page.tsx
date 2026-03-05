@@ -1,12 +1,11 @@
 "use client";
 
-import { use, useState } from "react";
-import { Sidebar } from "@/components/sidebar";
+import { use } from "react";
 import { StatCard } from "@/components/stat-card";
 import { DataTable } from "@/components/data-table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
   Search,
   Filter,
@@ -14,8 +13,6 @@ import {
   Plus,
   Bell,
   HelpCircle,
-  PanelLeftClose,
-  PanelLeftOpen,
 } from "lucide-react";
 
 // Sample data matching the screenshot
@@ -152,122 +149,95 @@ export default function BucketsDashboard({ params, searchParams }: PageProps) {
   // These must be unwrapped even if not used, to avoid the "params is a Promise" error
   use(params);
   use(searchParams);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#0b1120]">
-      <Sidebar
-        activeItem="s3-buckets"
-        isCollapsed={isSidebarCollapsed}
-      />
-
-      {/* Main Content */}
-      <main
-        className={cn(
-          "min-h-screen transition-[margin] duration-300",
-          isSidebarCollapsed ? "ml-0" : "ml-64"
-        )}
-      >
-        {/* Header */}
-        <header className="sticky top-0 z-40 glass border-b border-[rgba(148,163,184,0.1)]">
-          <div className="flex items-center justify-between px-8 py-4">
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() =>
-                  setIsSidebarCollapsed((prevState) => !prevState)
-                }
-                className="p-2 rounded-lg text-[#94a3b8] hover:bg-[rgba(30,41,59,0.7)] hover:text-white transition-colors"
-                aria-label={isSidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
-              >
-                {isSidebarCollapsed ? (
-                  <PanelLeftOpen className="w-5 h-5" />
-                ) : (
-                  <PanelLeftClose className="w-5 h-5" />
-                )}
-              </button>
-              <h1 className="text-2xl font-bold text-white">S3 Buckets</h1>
-            </div>
-
-            <div className="flex items-center gap-4">
-              {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#64748b]" />
-                <Input
-                  type="text"
-                  placeholder="Search buckets..."
-                  className="w-72 pl-10 bg-[rgba(30,41,59,0.5)] border-[rgba(148,163,184,0.2)] text-white placeholder:text-[#64748b] focus:border-[#06b6d4] focus:ring-[#06b6d4]"
-                />
-              </div>
-
-              <button className="p-2 rounded-lg hover:bg-[rgba(30,41,59,0.5)] transition-colors">
-                <Bell className="w-5 h-5 text-[#94a3b8]" />
-              </button>
-
-              <button className="p-2 rounded-lg hover:bg-[rgba(30,41,59,0.5)] transition-colors">
-                <HelpCircle className="w-5 h-5 text-[#94a3b8]" />
-              </button>
-            </div>
-          </div>
-        </header>
-
-        {/* Dashboard Content */}
-        <div className="p-8">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <StatCard
-              title="Total Buckets"
-              value="12"
-              change="↗ 2%"
-              icon="buckets"
-              trend="up"
-            />
-            <StatCard
-              title="Total Storage"
-              value="4.5 TB"
-              change="↗ 150GB"
-              icon="storage"
-              trend="up"
-            />
-            <StatCard
-              title="Active Regions"
-              value="3"
-              change="0% change"
-              icon="regions"
-              trend="neutral"
-            />
+      {/* Header */}
+      <header className="sticky top-0 z-40 glass border-b border-[rgba(148,163,184,0.1)]">
+        <div className="flex items-center justify-between px-8 py-4">
+          <div className="flex items-center gap-3">
+            <SidebarTrigger className="p-2 rounded-lg text-[#94a3b8] hover:bg-[rgba(30,41,59,0.7)] hover:text-white transition-colors" />
+            <h1 className="text-2xl font-bold text-white">S3 Buckets</h1>
           </div>
 
-          {/* Toolbar */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                className="bg-[rgba(30,41,59,0.5)] border-[rgba(148,163,184,0.2)] text-[#94a3b8] hover:bg-[rgba(30,41,59,0.7)] hover:text-white"
-              >
-                <Filter className="w-4 h-4 mr-2" />
-                Filter
-              </Button>
-
-              <Button
-                variant="outline"
-                className="bg-[rgba(30,41,59,0.5)] border-[rgba(148,163,184,0.2)] text-[#94a3b8] hover:bg-[rgba(30,41,59,0.7)] hover:text-white"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Export
-              </Button>
+          <div className="flex items-center gap-4">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#64748b]" />
+              <Input
+                type="text"
+                placeholder="Search buckets..."
+                className="w-72 pl-10 bg-[rgba(30,41,59,0.5)] border-[rgba(148,163,184,0.2)] text-white placeholder:text-[#64748b] focus:border-[#06b6d4] focus:ring-[#06b6d4]"
+              />
             </div>
 
-            <Button className="bg-[#06b6d4] hover:bg-[#0891b2] text-[#0b1120] font-semibold">
-              <Plus className="w-4 h-4 mr-2" />
-              Create Bucket
+            <button className="p-2 rounded-lg hover:bg-[rgba(30,41,59,0.5)] transition-colors">
+              <Bell className="w-5 h-5 text-[#94a3b8]" />
+            </button>
+
+            <button className="p-2 rounded-lg hover:bg-[rgba(30,41,59,0.5)] transition-colors">
+              <HelpCircle className="w-5 h-5 text-[#94a3b8]" />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Dashboard Content */}
+      <div className="p-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <StatCard
+            title="Total Buckets"
+            value="12"
+            change="↗ 2%"
+            icon="buckets"
+            trend="up"
+          />
+          <StatCard
+            title="Total Storage"
+            value="4.5 TB"
+            change="↗ 150GB"
+            icon="storage"
+            trend="up"
+          />
+          <StatCard
+            title="Active Regions"
+            value="3"
+            change="0% change"
+            icon="regions"
+            trend="neutral"
+          />
+        </div>
+
+        {/* Toolbar */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              className="bg-[rgba(30,41,59,0.5)] border-[rgba(148,163,184,0.2)] text-[#94a3b8] hover:bg-[rgba(30,41,59,0.7)] hover:text-white"
+            >
+              <Filter className="w-4 h-4 mr-2" />
+              Filter
+            </Button>
+
+            <Button
+              variant="outline"
+              className="bg-[rgba(30,41,59,0.5)] border-[rgba(148,163,184,0.2)] text-[#94a3b8] hover:bg-[rgba(30,41,59,0.7)] hover:text-white"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export
             </Button>
           </div>
 
-          {/* Data Table */}
-          <DataTable buckets={bucketsData} />
+          <Button className="bg-[#06b6d4] hover:bg-[#0891b2] text-[#0b1120] font-semibold">
+            <Plus className="w-4 h-4 mr-2" />
+            Create Bucket
+          </Button>
         </div>
-      </main>
+
+        {/* Data Table */}
+        <DataTable buckets={bucketsData} />
+      </div>
     </div>
   );
 }
