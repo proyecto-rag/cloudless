@@ -30,7 +30,6 @@ import {
 
 const menuItems = [
   { id: "overview", label: "Overview", icon: LayoutDashboard, href: "/" },
-  { id: "s3-buckets", label: "S3 Buckets", icon: HardDrive, href: "/buckets" },
   {
     id: "ec2-instances",
     label: "EC2 Instances",
@@ -119,13 +118,13 @@ export function AppSidebar() {
               <CreditCard className="size-4 text-muted-foreground" />
               <span>Subscription</span>
             </button>
-            <button
-              type="button"
+            <Link
+              href="/login"
               className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-destructive transition hover:bg-destructive/10"
             >
               <LogOut className="size-4 text-destructive" />
               <span>Sign out</span>
-            </button>
+            </Link>
           </PopoverContent>
         </Popover>
       </SidebarFooter>
