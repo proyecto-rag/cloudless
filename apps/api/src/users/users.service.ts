@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   Injectable,
   Logger,
   NotFoundException,
@@ -27,7 +28,9 @@ export class UsersService {
     private readonly jwtService: JwtService,
   ) {}
 
-  checkAuthStatus(user: User): UserAuthStatus {
+  checkAuthStatus(
+    user: Pick<User, 'id' | 'email' | 'username'>,
+  ): UserAuthStatus {
     const { email, username } = user;
     return {
       email,
@@ -77,7 +80,9 @@ export class UsersService {
     return this.jwtService.sign(payload);
   }
 
-  async create(createUserDto: CreateUserInput): Promise<UserResponse> {
+  async create(
+    createUserDto: CreateUserInput,
+  ): Promise<UserResponse | undefined> {
     try {
       this.logger.log(`Creating user... ${createUserDto.username}`);
       const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
@@ -102,6 +107,12 @@ export class UsersService {
 
       return user as UserResponse;
     } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002' || error.code === '23505') {
+          this.logger.error('Username already exists');
+          throw new ConflictException('Username already exists');
+        }
+      }
       this.logger.error(error);
       throw handleErrors(error);
     }

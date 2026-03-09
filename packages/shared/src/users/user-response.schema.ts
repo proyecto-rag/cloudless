@@ -1,13 +1,21 @@
 import { z } from "zod";
 
+const dateSchema = z.preprocess((value) => {
+  if (typeof value === "string") {
+    return new Date(value);
+  }
+
+  return value;
+}, z.date());
+
 export const userResponseSchema = z.object({
   id: z.string(),
   username: z.string(),
   email: z.string(),
-  role: z.enum(['user', 'admin']),
+  role: z.enum(["user", "admin"]),
   active: z.boolean(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  createdAt: dateSchema,
+  updatedAt: dateSchema,
 });
 
 export type UserResponse = z.infer<typeof userResponseSchema>;

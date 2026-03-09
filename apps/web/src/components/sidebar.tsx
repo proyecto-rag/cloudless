@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   CreditCard,
   HardDrive,
@@ -41,6 +41,18 @@ const menuItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+      });
+    } finally {
+      router.replace("/login");
+      router.refresh();
+    }
+  };
 
   return (
     <Sidebar>
@@ -118,13 +130,14 @@ export function AppSidebar() {
               <CreditCard className="size-4 text-muted-foreground" />
               <span>Subscription</span>
             </button>
-            <Link
-              href="/login"
+            <button
+              type="button"
+              onClick={handleLogout}
               className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-destructive transition hover:bg-destructive/10"
             >
               <LogOut className="size-4 text-destructive" />
               <span>Sign out</span>
-            </Link>
+            </button>
           </PopoverContent>
         </Popover>
       </SidebarFooter>

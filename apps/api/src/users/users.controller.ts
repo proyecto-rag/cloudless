@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
+import { User } from '@prisma/client';
 import { UsersService } from './users.service';
 import {
   createUserSchema,
@@ -19,6 +20,8 @@ import type {
   UpdateUserInput,
 } from '@repo/shared';
 import { ZodValidationPipe } from '../common/pipes';
+import { Auth } from './decorators/auth.decorator';
+import { GetUser } from './decorators/get-user.decoratos';
 
 @Controller('users')
 export class UsersController {
@@ -29,6 +32,12 @@ export class UsersController {
     @Body(new ZodValidationPipe(loginUserSchema)) loginUserDto: LoginUserInput,
   ) {
     return this.usersService.loginUser(loginUserDto);
+  }
+
+  @Get('auth-status')
+  @Auth()
+  checkAuthStatus(@GetUser() user: Omit<User, 'password'>) {
+    return this.usersService.checkAuthStatus(user);
   }
 
   @Post()
