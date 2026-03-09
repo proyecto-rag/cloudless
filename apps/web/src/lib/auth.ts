@@ -9,7 +9,7 @@ export const AUTH_STATUS_ENDPOINT = `${API_BASE_URL}/api/users/auth-status`;
 
 export const getAuthCookieOptions = () => ({
   httpOnly: true,
-  sameSite: "lax",
+  sameSite: "lax" as const,
   secure: process.env.NODE_ENV === "production",
   path: "/",
   maxAge: AUTH_COOKIE_MAX_AGE_SECONDS,
