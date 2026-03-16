@@ -65,7 +65,6 @@ export class UsersService {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       };
-
       return {
         user: userResponse,
         token: this.getJwtToken({ id: user.id }),

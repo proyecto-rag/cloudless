@@ -12,7 +12,7 @@ import {
   LOGIN_ENDPOINT,
   getAuthCookieOptions,
 } from "@/lib/auth";
-
+import { z } from "zod/v4";
 export type LoginFormState = {
   message?: string;
   fieldErrors?: {
@@ -31,13 +31,13 @@ export async function loginAction(
   });
 
   if (!validatedBody.success) {
-    const fieldErrors = validatedBody.error.flatten().fieldErrors;
+    const fieldErrors = z.treeifyError(validatedBody.error);
 
     return {
       message: "Invalid email or password.",
       fieldErrors: {
-        email: fieldErrors.email?.[0],
-        password: fieldErrors.password?.[0],
+        email: fieldErrors.properties?.email?.errors?.[0],
+        password: fieldErrors.properties?.password?.errors?.[0],
       },
     };
   }
