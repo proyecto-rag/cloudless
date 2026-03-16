@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createUserSchema } from "@repo/shared/src/users";
 
 import { REGISTER_ENDPOINT } from "@/lib/auth";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 
 export type RegisterFormState = {
   message?: string;
@@ -56,9 +57,10 @@ export async function registerAction(
         message,
       };
     }
-
-    redirect("/login?registered=1");
-  } catch {
-    return { message: "Unable to connect to the server. Please try again." };
+    
+  } catch (error) {
+    console.error(error);
+    return { message: "An unexpected error occurred. Please try again." };
   }
+  redirect("/login?registered=1");
 }

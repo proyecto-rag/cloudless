@@ -13,6 +13,7 @@ import {
   getAuthCookieOptions,
 } from "@/lib/auth";
 import { z } from "zod/v4";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 export type LoginFormState = {
   message?: string;
   fieldErrors?: {
@@ -67,7 +68,6 @@ export async function loginAction(
     if (!parsedLoginResponse.success) {
       return { message: "Unexpected login response. Please try again." };
     }
-
     const cookieStore = await cookies();
     cookieStore.set(
       AUTH_COOKIE_NAME,
@@ -75,8 +75,10 @@ export async function loginAction(
       getAuthCookieOptions(),
     );
 
-    redirect("/");
-  } catch {
-    return { message: "Unable to connect to the server. Please try again." };
+  } catch (error) {
+    console.error(error);
+    return { message: "An unexpected error occurred. Please try again." };
   }
+  // Next launches a redirect error if the redirect function is called
+  redirect("/");
 }
